@@ -65,7 +65,7 @@ class Matrix:
         return self.matrix
 
     @staticmethod
-    def is_matrix(list_of_lists: list[list[float]]) -> bool:
+    def is_matrix(list_of_lists: List[List[float]]) -> bool:
         """
         Checks if the input is a valid matrix (a 2D list with equal-length rows).
         """
@@ -102,7 +102,7 @@ class Vector:
     def len(self) -> float:
         return math.sqrt(self * self)
 
-    def get(self) -> list[float]:
+    def get(self) -> List[float]:
         return self.vec
 
 
