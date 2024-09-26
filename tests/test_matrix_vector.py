@@ -1,7 +1,7 @@
 import pytest
 from math import isclose, sqrt
 
-from project.matrix_vector import Matrix, Vector, angle_between_vectors
+from project.matrix_vector import Matrix, Vector
 
 
 class TestMatrixOperations:
@@ -61,7 +61,7 @@ class TestMatrixOperations:
 
     def test_matrix_transpose(self) -> None:
         matrix = Matrix([[1, 2], [3, 4], [5, 6]])
-        transposed = matrix.transposition()
+        transposed = matrix.transpose()
         assert transposed.matrix == [[1, 3, 5], [2, 4, 6]]
 
     def test_singleton_matrix(self) -> None:
@@ -99,19 +99,19 @@ class TestVectorOperations:
     def test_vector_dot_product(self) -> None:
         vector1 = Vector([1, 2, 3])
         vector2 = Vector([4, 5, 6])
-        dot = vector1 * vector2
+        dot = Vector.dot_product(vector1, vector2)
         assert dot == 32
 
         # Vectors with incompatible dimensions for dot product
         vector1 = Vector([1, 2])
         vector2 = Vector([3, 4, 5])
         with pytest.raises(ValueError):
-            vector1 * vector2
+            Vector.dot_product(vector1, vector2)
 
     def test_vector_angle(self) -> None:
         vector1 = Vector([1, 0])
         vector2 = Vector([0, 1])
-        angle = angle_between_vectors(vector1, vector2)
+        angle = Vector.angle_between_vectors(vector1, vector2)
         assert isclose(angle, 1.5708, abs_tol=1e-4)  # Pi/2 radians
 
     def test_singleton_vector(self) -> None:
