@@ -1,6 +1,6 @@
 import pytest
 from project.decorators import cache_decorator, smart_args, Evaluated, Isolated
-from typing import Callable, Any
+from typing import Any
 import random
 
 
