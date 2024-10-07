@@ -1,6 +1,6 @@
 from functools import wraps
-from typing import Callable, Any, Dict
-import inspect, copy
+from typing import Callable, Any, Tuple
+import inspect, copy, random
 
 
 def cache_decorator(
@@ -10,7 +10,7 @@ def cache_decorator(
         return lambda function: cache_decorator(
             function, max_results=max_results
         )
-    cache: Dict[Any, Any] = {}
+    cache: dict[Any, Any] = {}
 
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -51,7 +51,7 @@ def smart_args(
 
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         argspec = inspect.getfullargspec(function)
-        default_kwarg: Dict[str, Any] | None = argspec.kwonlydefaults
+        default_kwarg: dict[str, Any] | None = argspec.kwonlydefaults
         if default_kwarg is not None:
             for key, value in default_kwarg.items():
                 if key in kwargs:
