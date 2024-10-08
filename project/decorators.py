@@ -4,22 +4,24 @@ import inspect, copy
 
 
 def cache_decorator(
-    func: Any = None, *, max_results: Any = None
+    function: Any = None, *, cache_size: Any = None
 ) -> Callable[..., Any]:
-    if func is None:
-        return lambda function: cache_decorator(
-            function, max_results=max_results
-        )
+    """
+    Function Caching decorator.
+    """
+    if function is None:
+        return lambda func: cache_decorator(func, cache_size=cache_size)
+
     cache: Dict[Any, Any] = {}
 
-    @wraps(func)
+    @wraps(function)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        if not max_results:
-            return func(*args, **kwargs)
+        if not cache_size:
+            return function(*args, **kwargs)
         key = (args, frozenset(kwargs.items()))
         if key not in cache:
-            result = func(*args, **kwargs)
-            if len(cache) == max_results:
+            result = function(*args, **kwargs)
+            if len(cache) == cache_size:
                 cache.pop(next(iter(cache)))
             cache[key] = result
         return cache[key]
@@ -28,17 +30,34 @@ def cache_decorator(
 
 
 class Evaluated:
+    """
+    Substitutes the default value calculated at the time of the call. Takes as an argument a function without arguments that returns something.
+    """
+
     def __init__(self, func: Any) -> None:
+        """
+        Initializes a Evaluated object.
+        """
         if isinstance(func, Isolated):
             raise TypeError("You cannot combine Evaluated with Isolated.")
         self.func = func
 
     def execute(self) -> Any:
+        """
+        Performs a function call.
+        """
         return self.func()
 
 
 class Isolated:
+    """
+    A dummy default value. The argument must be passed, but at the time of transmission it is copied (deep copy).
+    """
+
     def __init__(self, value: Any = None):
+        """
+        Initializes a Isolated object.
+        """
         if isinstance(value, Evaluated):
             raise TypeError("You cannot combine Isolated with Evaluated.")
 
@@ -46,9 +65,13 @@ class Isolated:
 def smart_args(
     function: Any = None, position_args: bool = False
 ) -> Callable[..., Any]:
+    """
+    Decorator for analyzing arguments of the Isolated and Evaluated types.
+    """
     if function is None:
         return lambda func: smart_args(func, position_args=position_args)
 
+    @wraps(function)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         argspec = inspect.getfullargspec(function)
         default_kwarg = argspec.kwonlydefaults
