@@ -3,12 +3,19 @@ from functools import wraps
 
 
 def curry_explicit(
-    function: Callable[..., Any], arity: Any
+    function: Callable[..., Any], arity: int
 ) -> Callable[..., Any]:
     """
     A function for currying an accepted function.
+
+    Args:
+        function (Callable[..., Any]: the function that needs to be curried.
+        arity (int): the number of arguments for the curried function.
+
+    Returns:
+        result (Callable[..., Any]: a function that supports currying.
     """
-    if not is_arity(arity):
+    if arity < 0:
         raise TypeError("Input must be a non-negative numeric.")
 
     @wraps(function)
@@ -21,12 +28,19 @@ def curry_explicit(
 
 
 def uncurry_explicit(
-    function: Callable[..., Any], arity: Any
+    function: Callable[..., Any], arity: int
 ) -> Callable[..., Any]:
     """
     A function for uncurrying an accepted function.
+
+    Args:
+        function (Callable[..., Any]: the function that needs to be uncurried.
+        arity (int): the number of arguments for the curried function.
+
+    Returns:
+        result (Callable[..., Any]: a function that accepts a list of arguments.
     """
-    if not is_arity(arity):
+    if arity < 0:
         raise TypeError("Input must be a non-negative numeric.")
 
     @wraps(function)
@@ -41,15 +55,3 @@ def uncurry_explicit(
         return res
 
     return wrapper
-
-
-def is_arity(obj: Any) -> bool:
-    """
-    The function of checking the parameter passed to arity.
-    """
-    try:
-        if obj >= 0:
-            return True
-        return False
-    except TypeError:
-        return False

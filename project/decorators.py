@@ -4,10 +4,17 @@ import inspect, copy
 
 
 def cache_decorator(
-    function: Any = None, *, cache_size: Any = None
+    function: Any = None, *, cache_size: int = 0
 ) -> Callable[..., Any]:
     """
     Function Caching decorator.
+
+    Args:
+        function (Callable[..., Any]: the function to implement caching for.
+        cache_size (int): the number of recent results for the cache.
+
+    Returns:
+        result (Callable[..., Any]: a function that supports caching.
     """
     if function is None:
         return lambda func: cache_decorator(func, cache_size=cache_size)
@@ -36,7 +43,7 @@ class Evaluated:
 
     def __init__(self, func: Any) -> None:
         """
-        Initializes a Evaluated object.
+        Initializes Evaluated object.
         """
         if isinstance(func, Isolated):
             raise TypeError("You cannot combine Evaluated with Isolated.")
@@ -56,7 +63,7 @@ class Isolated:
 
     def __init__(self, value: Any = None):
         """
-        Initializes a Isolated object.
+        Initializes Isolated object.
         """
         if isinstance(value, Evaluated):
             raise TypeError("You cannot combine Isolated with Evaluated.")
@@ -67,14 +74,24 @@ def smart_args(
 ) -> Callable[..., Any]:
     """
     Decorator for analyzing arguments of the Isolated and Evaluated types.
+
+    Args:
+        function (Callable[..., Any]: a function that should support Isolated and Evaluated as default arguments.
+        position_args (bool): a parameter that determines whether positional arguments need to be supported.
+
+    Returns:
+        result (Callable[..., Any]: a function that supports Isolated and Evaluated as default arguments.
     """
     if function is None:
         return lambda func: smart_args(func, position_args=position_args)
 
+    argspec = inspect.getfullargspec(function)
+    default_kwarg = argspec.kwonlydefaults
+    default_args = argspec.defaults
+    all_positional_args = argspec.args
+
     @wraps(function)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        argspec = inspect.getfullargspec(function)
-        default_kwarg = argspec.kwonlydefaults
         if default_kwarg is not None:
             for key, value in default_kwarg.items():
                 if key in kwargs:
@@ -83,28 +100,33 @@ def smart_args(
                 elif isinstance(value, Evaluated):
                     kwargs[key] = value.execute()
 
-        if position_args:
-            default_args = argspec.defaults
-            all_positional_args = argspec.args
-            if default_args is not None and all_positional_args is not None:
-                list_args = list()
-                num_non_default_args = len(all_positional_args) - len(
-                    default_args
-                )
-                for i, arg in enumerate(args):
+        if (
+            position_args
+            and default_args is not None
+            and all_positional_args is not None
+        ):
+            list_args = list()
+            num_non_default_args = len(all_positional_args) - len(default_args)
+            for i in range(0, len(all_positional_args)):
+                if i < len(args):
                     if i < num_non_default_args or not isinstance(
                         default_args[i - num_non_default_args], Isolated
                     ):
-                        list_args.append(arg)
+                        list_args.append(args[i])
                     else:
-                        list_args.append(copy.deepcopy(arg))
-                num_defined_default_args = len(args) - num_non_default_args
-                for i in range(num_defined_default_args, len(default_args)):
-                    if isinstance(default_args[i], Evaluated):
-                        list_args.append(default_args[i].execute())
+                        list_args.append(copy.deepcopy(args[i]))
+                else:
+                    if isinstance(
+                        default_args[i - num_non_default_args], Evaluated
+                    ):
+                        list_args.append(
+                            default_args[i - num_non_default_args].execute()
+                        )
                     else:
-                        list_args.append(default_args[i])
-                return function(*list_args, **kwargs)
+                        list_args.append(
+                            default_args[i - num_non_default_args]
+                        )
+            return function(*list_args, **kwargs)
         return function(*args, **kwargs)
 
     return wrapper
