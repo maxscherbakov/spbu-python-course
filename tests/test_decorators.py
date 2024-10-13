@@ -52,10 +52,8 @@ def test_cache_built_in_functions() -> None:
     # Checking the operation of the built-in function after caching
     s = cache_decorator(sum, cache_size=3)
     assert s((1, 2, 3)) == 6
-
-    # Checking the launch of a cached function from unhashable type: 'list'
-    with pytest.raises(TypeError):
-        s([1, 2, 3])
+    assert s([1, 2, 3]) == 6
+    assert s({1, 2, 3}) == 6
 
 
 def test_without_cache_built_in_functions() -> None:
@@ -102,19 +100,22 @@ def test_only_kwargs_isolation() -> None:
 
 def test_only_kwargs_evaluated() -> None:
     @smart_args
-    def check_evaluation(
+    def check_evaluated(
         *, x: int = get_random_number(), y: Any = Evaluated(get_random_number)
     ) -> Any:
         return x, y
 
+    # Checking that without Evaluated the value is calculated once
+    assert check_evaluated()[0] == check_evaluated()[0]
+
     # Checking that Evaluated is triggered without passing an argument
-    assert check_evaluation()[0] == check_evaluation()[0]
-    assert check_evaluation(y=150)[1] == 150
+    assert 0 <= check_evaluated()[1] <= 100
+    assert check_evaluated(y=150)[1] == 150
 
 
-def test_only_kwargs_isolated_evaluation() -> None:
+def test_only_kwargs_isolated_evaluated() -> None:
     @smart_args
-    def check_isolated_evaluation(
+    def check_isolated_evaluated(
         *, x: Any = Isolated(), y: Any = Evaluated(get_random_number)
     ) -> Any:
         x["a"] = 0
@@ -122,8 +123,8 @@ def test_only_kwargs_isolated_evaluation() -> None:
 
     # Checking that Evaluated and Isolated can be parameters of the same function
     no_mutable = {"a": 10}
-    res1 = check_isolated_evaluation(x=no_mutable)
-    res2 = check_isolated_evaluation(x=no_mutable, y=150)
+    res1 = check_isolated_evaluated(x=no_mutable)
+    res2 = check_isolated_evaluated(x=no_mutable, y=150)
 
     assert res1[0] == {"a": 0}
     assert no_mutable == {"a": 10}
@@ -132,7 +133,7 @@ def test_only_kwargs_isolated_evaluation() -> None:
 
 def test_all_positional_arguments_defaulted() -> None:
     @smart_args(position_args=True)
-    def check_isolated_evaluation(
+    def check_isolated_evaluated(
         a: Any = Isolated(),
         b: Any = Evaluated(get_random_number),
         *,
@@ -145,19 +146,19 @@ def test_all_positional_arguments_defaulted() -> None:
 
     # Checking that Isolated can be positional parameters of a function
     no_mutable = {"a": 10}
-    res1 = check_isolated_evaluation(no_mutable, x=no_mutable)
+    res1 = check_isolated_evaluated(no_mutable, x=no_mutable)
     assert res1[0] == {"a": 10, "b": 1}
     assert no_mutable == {"a": 10}
-    assert 0 <= res1[1] < 100
+    assert 0 <= res1[1] <= 100
 
     # Checking that Evaluated can be positional parameters of a function
-    res2 = check_isolated_evaluation(no_mutable, 105, x=no_mutable)
+    res2 = check_isolated_evaluated(no_mutable, 105, x=no_mutable)
     assert res2[1] == 105
 
 
 def test_with_other_positional_arguments() -> None:
     @smart_args(position_args=True)
-    def check_isolated_evaluation(
+    def check_isolated_evaluated(
         flag: bool,
         z: int,
         a: Any = Isolated(),
@@ -169,14 +170,35 @@ def test_with_other_positional_arguments() -> None:
     ) -> Any:
         x["a"] = 0
         a["b"] = 1
-        return a, b, c, x, y, flag, z
+        return flag, z, a, b, c, x, y
 
     # Checking that Evaluated, Isolated and other args can be positional parameters of a function
     no_mutable = {"a": 10}
-    res1 = check_isolated_evaluation(True, 7, no_mutable, x=no_mutable)
-    assert res1[0] == {"a": 10, "b": 1}
+    res1 = check_isolated_evaluated(True, 7, no_mutable, x=no_mutable)
+    assert res1[2] == {"a": 10, "b": 1}
     assert no_mutable == {"a": 10}
-    assert 0 <= res1[1] < 100
-    assert res1[-2] == True
-    assert res1[-1] == 7
-    assert res1[2] == 11
+    assert 0 <= res1[3] <= 100
+    assert res1[0] == True
+    assert res1[1] == 7
+    assert res1[4] == 11
+
+
+def test_repeated_call_evaluated() -> None:
+    count = 0
+
+    def counter() -> int:
+        nonlocal count
+        count += 1
+        return count
+
+    @smart_args(position_args=True)
+    def check_evaluated(
+        x: Any = Evaluated(counter), *, y: Any = Evaluated(counter)
+    ) -> Any:
+        return x, y
+
+    # Checking that the counter is triggered if no value has been passed to Evaluated
+    assert check_evaluated() == (2, 1)
+    assert check_evaluated(10) == (10, 3)
+    assert check_evaluated(15, y=16) == (15, 16)
+    assert check_evaluated() == (5, 4)
