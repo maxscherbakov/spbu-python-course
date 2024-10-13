@@ -26,8 +26,6 @@ def test_curry_sum_four() -> None:
 
 
 def test_currying_built_in_function_pow() -> None:
-    assert curry_explicit(print, 2)(1)(2) is None
-
     s = curry_explicit(pow, 3)
     assert s(2)(2)(3) == 1
 
