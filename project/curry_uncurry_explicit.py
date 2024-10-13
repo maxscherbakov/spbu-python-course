@@ -49,6 +49,10 @@ def uncurry_explicit(
             raise ValueError(
                 "More parameters are passed than the arity of the function."
             )
+
+        if not args:
+            return function()
+
         res = function
         for arg in args:
             res = res(arg)
