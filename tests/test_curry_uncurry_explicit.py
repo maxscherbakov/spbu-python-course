@@ -38,3 +38,12 @@ def test_currying_built_in_function_print() -> None:
     assert uncurry_explicit(curry_explicit(print, 4)(12), 3)(1, 2, 3) is None
     with pytest.raises(TypeError):
         curry_explicit(print, 2)(1)(2)(3, 4, 5)
+
+
+def test_arity_zero() -> None:
+    def no_args() -> str:
+        return "no args"
+
+    # Test that arity 0 works correctly with no arguments.
+    assert curry_explicit(no_args, 0)() == no_args()
+    assert uncurry_explicit(no_args, 0)() == no_args()

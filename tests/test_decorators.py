@@ -3,6 +3,7 @@ from unittest.mock import patch, call
 from project.decorators import cache_decorator, smart_args, Evaluated, Isolated
 from typing import Any
 import random
+from itertools import count
 
 
 def test_cache_fibonacci() -> None:
@@ -17,13 +18,22 @@ def test_cache_fibonacci() -> None:
     for i in range(0, 1000):
         fibonacci(i)
 
-    fibonacci(999)
-    fibonacci(998)
-    fibonacci(997)
+    # Inspect the internal cache state
+    assert len(fibonacci.dict_cache) == 3
+    keys = [key for key in fibonacci.dict_cache.keys()]
+    assert keys == [(997,), (998,), (999,)]
+
     # Checking for RecursionError when calling fibonacci with an uncached number
     with pytest.raises(RecursionError):
-        fibonacci(1000)
         fibonacci(996)
+
+
+def test_cache_built_in_functions() -> None:
+    # Checking the operation of the built-in function after caching
+    s = cache_decorator(sum, cache_size=3)
+    assert s((1, 2, 3)) == 6
+    assert s([4, 5, 6]) == 15
+    assert s({7, 8, 9}) == 24
 
 
 @patch("builtins.print")
@@ -48,18 +58,12 @@ def test_cache_function_with_non_cached_arguments(mocked_print: Any) -> None:
     assert mocked_print.mock_calls == [call(4, 5, 6), call("Hello, World!")]
 
 
-def test_cache_built_in_functions() -> None:
-    # Checking the operation of the built-in function after caching
-    s = cache_decorator(sum, cache_size=3)
-    assert s((1, 2, 3)) == 6
-    assert s([1, 2, 3]) == 6
-    assert s({1, 2, 3}) == 6
-
-
 def test_without_cache_built_in_functions() -> None:
     # Checking the launch of a non-cached function from unhashable type: 'list'
     s = cache_decorator(sum)
     assert s([1, 2, 3]) == 6
+    assert s({1, 2, 3}) == 6
+    assert s((1, 2, 3)) == 6
 
 
 def test_without_cache() -> None:
@@ -184,21 +188,22 @@ def test_with_other_positional_arguments() -> None:
 
 
 def test_repeated_call_evaluated() -> None:
-    count = 0
+    # Helper function to simulate unique values
+    counter = count()
 
-    def counter() -> int:
-        nonlocal count
-        count += 1
-        return count
+    def get_unique_value() -> int:
+        return next(counter)
 
     @smart_args(position_args=True)
     def check_evaluated(
-        x: Any = Evaluated(counter), *, y: Any = Evaluated(counter)
+        x: Any = Evaluated(get_unique_value),
+        *,
+        y: Any = Evaluated(get_unique_value)
     ) -> Any:
         return x, y
 
     # Checking that the counter is triggered if no value has been passed to Evaluated
-    assert check_evaluated() == (2, 1)
-    assert check_evaluated(10) == (10, 3)
+    assert check_evaluated() == (1, 0)
+    assert check_evaluated(10) == (10, 2)
     assert check_evaluated(15, y=16) == (15, 16)
-    assert check_evaluated() == (5, 4)
+    assert check_evaluated() == (4, 3)
