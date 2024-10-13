@@ -60,19 +60,21 @@ def cache_decorator(
     if function is None:
         return lambda func: cache_decorator(func, cache_size=cache_size)
 
-    cache: Dict[tuple[Any, ...], Any] = {}
+    dict_cache: Dict[tuple[Any, ...], Any] = {}
 
     @wraps(function)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         if not cache_size:
             return function(*args, **kwargs)
         key = make_key(args, kwargs)
-        if key not in cache:
+        if key not in dict_cache:
             result = function(*args, **kwargs)
-            if len(cache) == cache_size:
-                cache.pop(next(iter(cache)))
-            cache[key] = result
-        return cache[key]
+            if len(dict_cache) == cache_size:
+                dict_cache.pop(next(iter(dict_cache)))
+            dict_cache[key] = result
+        return dict_cache[key]
+
+    setattr(wrapper, "dict_cache", dict_cache)
 
     return wrapper
 
