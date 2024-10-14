@@ -1,26 +1,46 @@
 from typing import Any, Generator, Callable
 
 
-def get_nth_element(
-    func: Callable[[], Generator[Any, None, None]]
+def get_nth_prime(
+    function: Callable[[], Generator[Any, None, None]]
 ) -> Callable[..., Any]:
-    def wrapper(n: int) -> Any:
-        if n <= 0:
-            raise IndexError("The index must be greater than 0")
+    """
+    The decorator returns a function that returns the nth element of the generator.
 
-        gen = func()
-        for i, element in enumerate(gen, start=1):
-            if i == n:
+    Args:
+        function (Callable[[], Generator[Any, None, None]]): function returning the prime number generator.
+
+    Returns:
+        result (Callable[..., Any]): a function that accepts n and returns the nth prime number.
+    """
+
+    count = 0
+
+    def wrapper(n: int) -> Any:
+        nonlocal count
+
+        if n <= count:
+            raise IndexError(f"The index must be greater than {n}")
+
+        for i, element in enumerate(gen, start=count):
+            if i + 1 == n:
+                count = n
                 return element
 
-        raise IndexError(f"Generator does not have {n} elements.")
-
+    gen = function()
     return wrapper
 
 
-@get_nth_element
-def gen_primes() -> Generator[int, None, None]:
-    primes = []
+@get_nth_prime
+def primes_gen() -> Generator[int, None, None]:
+    """
+    Function returning the prime number generator.
+
+    Returns:
+        result (Generator[int, None, None]): the prime number generator.
+    """
+
+    primes: list[int] = []
     num = 2
     while True:
         if all(num % prime != 0 for prime in primes):
