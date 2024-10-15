@@ -1,3 +1,4 @@
+import math
 from typing import Any, Generator, Callable
 
 
@@ -14,20 +15,26 @@ def get_nth_prime(
         result (Callable[..., Any]): a function that accepts n and returns the nth prime number.
     """
 
-    count = 0
+    gen = function()
+    num = next(gen)
+    count = 1
 
     def wrapper(n: int) -> Any:
-        nonlocal count
+        nonlocal count, num
 
-        if n <= count:
-            raise IndexError(f"The index must be greater than {n}")
+        if n < count:
+            raise IndexError(
+                f"The index must be greater than or equal to {count}"
+            )
+        if n == count:
+            return num
 
         for i, element in enumerate(gen, start=count):
             if i + 1 == n:
                 count = n
+                num = element
                 return element
 
-    gen = function()
     return wrapper
 
 
@@ -40,10 +47,17 @@ def primes_gen() -> Generator[int, None, None]:
         result (Generator[int, None, None]): the prime number generator.
     """
 
-    primes: list[int] = []
     num = 2
     while True:
-        if all(num % prime != 0 for prime in primes):
-            primes.append(num)
+        is_prime = True
+        limit = math.isqrt(num)
+
+        for divisor in range(2, limit + 1):
+            if num % divisor == 0:
+                is_prime = False
+                break
+
+        if is_prime:
             yield num
+
         num += 1

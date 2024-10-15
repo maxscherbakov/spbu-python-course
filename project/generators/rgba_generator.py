@@ -10,9 +10,10 @@ def get_rgba_gen() -> Generator[tuple[int, int, int, int], None, None]:
         result (Generator[tuple[int, int, int, int], None, None]): generator of 4-dimensional rgba vectors.
     """
     return (
-        (r, g, b, a * 2)
+        (r, g, b, a)
         for r, g, b in product(range(256), repeat=3)
-        for a in range(0, 50)
+        for a in range(0, 101)
+        if a % 2 == 0
     )
 
 
