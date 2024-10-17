@@ -149,18 +149,17 @@ def smart_args(
             and all_positional_args is not None
         ):
             num_non_default_args = len(all_positional_args) - len(default_args)
-            list_args = list(
-                args + default_args[len(args) - num_non_default_args :]
-            )
-            for i in range(num_non_default_args, len(all_positional_args)):
-                if isinstance(
-                    default_args[i - num_non_default_args], Isolated
+            num_default_args = len(all_positional_args) - num_non_default_args
+
+            list_args = list(args)
+            for id_default_arg in range(num_default_args):
+                id_args = num_non_default_args + id_default_arg
+                if isinstance(default_args[id_default_arg], Isolated):
+                    list_args[id_args] = copy.deepcopy(args[id_args])
+                elif id_args >= len(args) and isinstance(
+                    default_args[id_default_arg], Evaluated
                 ):
-                    list_args[i] = copy.deepcopy(args[i])
-                elif i >= len(args) and isinstance(
-                    default_args[i - num_non_default_args], Evaluated
-                ):
-                    list_args[i] = list_args[i].execute()
+                    list_args.append(default_args[id_default_arg].execute())
             return function(*list_args, **kwargs)
         return function(*args, **kwargs)
 
