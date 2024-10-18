@@ -47,3 +47,16 @@ def test_arity_zero() -> None:
     # Test that arity 0 works correctly with no arguments.
     assert curry_explicit(no_args, 0)() == no_args()
     assert uncurry_explicit(no_args, 0)() == no_args()
+
+
+def test_arbitrary_arity_function() -> None:
+    """Test that functions with arbitrary arity are frozen at the specified arity."""
+    curried_max = curry_explicit(
+        max, 3
+    )  # We want to curry the max function with arity 3
+
+    result = curried_max(5)(1)(10)  # Providing 3 arguments one at a time
+    assert result == 10  # The maximum of (5, 1, 10) is 10
+
+    with pytest.raises(TypeError):
+        curried_max(1)(2)(3)(4)
