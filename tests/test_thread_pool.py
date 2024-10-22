@@ -1,5 +1,5 @@
 from time import sleep
-from threading import Thread
+from threading import Thread, active_count
 from typing import Any
 import pytest
 from project.thread_pool import ThreadPool, TaskWrapper
@@ -169,3 +169,19 @@ def test_for_the_number_of_threads() -> None:
     with pytest.raises(ValueError):
         ThreadPool(num_threads=0)
         ThreadPool(num_threads=-1)
+
+
+def test_thread_count() -> None:
+    """
+    Test case to verify the correct number of active threads in the pool.
+    Ensures that the pool has the same number of active threads as specified.
+    """
+    initial_active_threads = active_count()  # Count initial active threads
+    pool = ThreadPool(5)  # Create a thread pool with 5 threads
+    current_active_threads = active_count()  # Count current active threads
+
+    # Pool threads
+    active_threads_in_pool = current_active_threads - initial_active_threads
+
+    assert active_threads_in_pool == 5
+    pool.dispose()
