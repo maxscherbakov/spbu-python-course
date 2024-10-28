@@ -53,29 +53,29 @@ def test_game_states(players: list[Player], nums_steps: list[int]) -> None:
 
 
 @pytest.mark.parametrize(
-    "cards1, cards2, expect_scores1, expect_scores2",
+    "cards1, cards2, expect_score1, expect_score2",
     [
-        ([A, K], [J, six], {11, 21}, {16}),
-        ([nine, ten], [A, A], {19}, {2, 12, 22}),
+        ([A, K], [J, six], 21, 16),
+        ([nine, ten], [A, A], 19, 12),
     ],
 )
 def test_players_hands(
     cards1: list[Card],
     cards2: list[Card],
-    expect_scores1: int,
-    expect_scores2: int,
+    expect_score1: int,
+    expect_score2: int,
 ) -> None:
     player_hand1 = Hand()
     player_hand2 = Hand()
     for card in cards1:
         player_hand1.add_card(card)
 
-    assert player_hand1.get_scores() == expect_scores1
+    assert player_hand1.get_score() == expect_score1
 
     for card in cards2:
         player_hand2.add_card(card)
 
-    assert player_hand2.get_scores() == expect_scores2
+    assert player_hand2.get_score() == expect_score2
 
     # Test hand data-descriptor is working correctly
     assert player_hand1.get_cards() != player_hand2.get_cards()
@@ -112,11 +112,7 @@ def test_players_chips() -> None:
             elif hand.state is HandStates.BLACKJACK:
                 dealer_hand = game.desk.dealer.hand
                 first_card = dealer_hand.get_card(0)
-                if (
-                    dealer_hand.state is HandStates.BLACKJACK
-                    and player.strategy.even_money
-                    and first_card.name == "A"
-                ):
+                if player.strategy.even_money and first_card.name == "A":
                     delta_chips += first_bet
                 elif not game.desk.dealer.hand.state is HandStates.BLACKJACK:
                     delta_chips += 1.5 * first_bet

@@ -70,7 +70,6 @@ class Game:
 
     def __init__(self, players: list[Player]) -> None:
         """Initializing a Game object"""
-        self.players = players
         self.desk = Desk(players)
         self.num_round = 0
         self.round_state = GameStates.START
@@ -86,12 +85,16 @@ class Game:
                     self.desk.hands[player][0].show_bet(id_player)
             case GameStates.TOOK_CARDS:
                 for id_player, player in enumerate(self.desk.players):
+                    if self.desk.hands[player][0].state is HandStates.OUT:
+                        continue
                     for hand in self.desk.hands[player]:
                         show_hand_player(hand, id_player)
                         hand.show_history()
                     print()
             case GameStates.RESULTS:
                 for id_player, player in enumerate(self.desk.players):
+                    if self.desk.hands[player][0].state is HandStates.OUT:
+                        continue
                     print(f"The result of player {id_player + 1}")
                     for hand in self.desk.hands[player]:
                         show_hand_player(hand, id_player)
@@ -131,6 +134,8 @@ class Game:
         dealer_card = self.desk.dealer.hand.get_card(0)
         for id_player, player in enumerate(self.desk.players):
             player_hand = self.desk.hands[player][0]
+            if not player_hand.in_playing:
+                continue
             self.desk.dealer_give_card(self.desk.hands[player][0])
             self.desk.dealer_give_card(self.desk.hands[player][0])
 
@@ -187,27 +192,22 @@ class Game:
     def dealer_play(self) -> None:
         """The dealer takes the missing cards."""
         self.round_state = GameStates.DEALER_PLAY
-        while max(self.desk.dealer.hand.get_scores()) < 17:
+        while True:
+            dealer_score = self.desk.dealer.hand.get_score()
+            if dealer_score == -1 or dealer_score >= 17:
+                break
             self.desk.dealer_give_card(self.desk.dealer.hand)
 
     def round_results(self) -> None:
         """The results of the game are summarized."""
         self.round_state = GameStates.RESULTS
-        dealer_score = max(
-            [
-                score
-                for score in self.desk.dealer.hand.get_scores() | {-1}
-                if score <= 21
-            ]
-        )
+        dealer_score = self.desk.dealer.hand.get_score()
         for (id_player, player) in enumerate(self.desk.players):
             for id_hand, hand in enumerate(self.desk.hands[player]):
                 if not hand.in_playing:
                     continue
 
-                hand_score = max(
-                    [score for score in hand.get_scores() if score <= 21]
-                )
+                hand_score = hand.get_score()
 
                 if hand_score > dealer_score:
                     hand.state = HandStates.WIN
@@ -237,17 +237,17 @@ class Game:
         Returns:
             result (bool): a flag indicating that the player has not finished the game.
         """
-        target_player = self.players[id_player]
+        target_player = self.desk.players[id_player]
         for id_hand, hand in enumerate(self.desk.hands[target_player]):
             if not hand.in_playing or hand.hand["history"] == "pass":
                 continue
             while True:
-                scores = hand.get_scores()
-                if min(scores) > 21:
+                score = hand.get_score()
+                if score == -1:
                     hand.state = HandStates.LOSE
                     hand.game_over()
                     break
-                elif 21 in scores:
+                elif score == 21:
                     break
 
                 action = target_player.strategy.play(hand, dealer_card)

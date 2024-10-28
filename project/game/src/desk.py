@@ -1,5 +1,5 @@
 from project.game.src.persons import Player, Dealer
-from project.game.src.objects import Hand
+from project.game.src.objects import Hand, HandStates
 
 
 class Desk:
@@ -47,7 +47,10 @@ class Desk:
         """Players place their first bets in the amount specified in the strategy."""
         for id_player, player in enumerate(self.players):
             bet = player.strategy.first_bet
-            self.check_bet(id_player, bet)
+            if not self.check_bet(id_player, bet):
+                self.hands[player][0].game_over()
+                self.hands[player][0].state = HandStates.OUT
+                continue
             player.chips -= bet
             self.hands[player][0].bet = bet
 

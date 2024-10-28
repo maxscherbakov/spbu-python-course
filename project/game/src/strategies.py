@@ -46,36 +46,36 @@ class Basic(Strategy):
         self.even_money = True
 
     def play(self, player_hand: Hand, dealer_card: Card) -> Action:
-        scores = player_hand.get_scores()
-        if min(scores) < 17 and max(scores) > 21 or max(scores) < 17:
+        score = player_hand.get_score()
+        if score < 17:
             return Action.TAKE
         return Action.PASS
 
 
 class Optimal1(Strategy):
     def play(self, player_hand: Hand, dealer_card: Card) -> Action:
-        scores = player_hand.get_scores()
+        score = player_hand.get_score()
         cards = player_hand.get_cards()
-        dealer_score = max(dealer_card.scores)
+        dealer_card_name = dealer_card.name
 
-        split_res = check_split(cards, dealer_score)
+        split_res = check_split(cards, dealer_card.name)
         if not split_res is None:
             return split_res
 
-        double_res = check_double(max(scores), dealer_score)
+        double_res = check_double(score, dealer_card_name)
         if not double_res is None and not player_hand.double_bet:
             return double_res
 
-        if "A" in set([card.name for card in cards]) and len(cards) == 2:
-            soft_hands = check_soft_hands(min(scores), dealer_score)
+        if "A" in set(card.name for card in cards) and len(cards) == 2:
+            soft_hands = check_soft_hands(score - 10, dealer_card_name)
             if not soft_hands is None:
                 return soft_hands
 
-        steady_hand = check_steady_hands(max(scores), dealer_score)
+        steady_hand = check_steady_hands(score, dealer_card_name)
         if not steady_hand is None:
             return steady_hand
 
-        if max(scores) >= 17:
+        if score >= 17:
             return Action.PASS
         return Action.TAKE
 
@@ -85,37 +85,37 @@ class Aggressive(Strategy):
         self.first_bet = 20
 
     def play(self, player_hand: Hand, dealer_card: Card) -> Action:
-        scores = player_hand.get_scores()
-        dealer_score = max(dealer_card.scores)
+        score = player_hand.get_score()
+        dealer_card_name = dealer_card.name
 
-        if max(scores) <= 6:
+        if score <= 6:
             return Action.DOUBLE
 
-        double_res = check_double(max(scores), dealer_score)
+        double_res = check_double(score, dealer_card_name)
         if not double_res is None and player_hand.double_bet:
             return Action.TRIPLING
 
-        if max(scores) > 19:
+        if score > 19:
             return Action.PASS
         return Action.TAKE
 
 
 class Optimal2(Strategy):
     def play(self, player_hand: Hand, dealer_card: Card) -> Action:
-        score = max(score for score in player_hand.get_scores() if score <= 21)
+        score = player_hand.get_score()
         cards = player_hand.get_cards()
-        dealer_score = max(dealer_card.scores)
+        dealer_card_name = dealer_card.name
 
-        split_res = check_split(cards, dealer_score)
+        split_res = check_split(cards, dealer_card_name)
         if not split_res is None:
             return split_res
 
-        if dealer_score <= 9:
+        if not dealer_card_name in {"10", "J", "Q", "K", "A"}:
             if score in {11, 10}:
                 return Action.DOUBLE
             elif score <= 16:
                 return Action.TAKE
-        elif dealer_score <= 11 and score <= 16:
+        elif score <= 16:
             return Action.TAKE
 
         if score >= 17:
@@ -123,58 +123,58 @@ class Optimal2(Strategy):
         return Action.TAKE
 
 
-def check_split(cards: list[Card], dealer_score: int) -> Action | None:
+def check_split(cards: list[Card], dealer_card_name: str) -> Action | None:
     if len(cards) != 2:
         return None
     if cards[1].name == cards[0].name:
         match cards[0].name:
             case "A" | "8":
-                if dealer_score != 11:
+                if dealer_card_name != "A":
                     return Action.SPLIT
                 return Action.TAKE
             case "5":
                 return Action.DOUBLE
 
             case "4":
-                if dealer_score <= 6:
+                if dealer_card_name in {"2", "3", "4", "5", "6"}:
                     return Action.SPLIT
             case "9":
-                if dealer_score in {7, 10, 11}:
+                if dealer_card_name in {"7", "10", "11"}:
                     return Action.PASS
                 return Action.SPLIT
             case "6":
-                if dealer_score <= 6:
+                if dealer_card_name in {"2", "3", "4", "5", "6"}:
                     return Action.SPLIT
                 return Action.TAKE
             case "2" | "3" | "7":
-                if dealer_score <= 7:
+                if dealer_card_name in {"2", "3", "4", "5", "6", "7"}:
                     return Action.SPLIT
                 return Action.TAKE
     return None
 
 
-def check_double(score: int, dealer_score: int) -> Action | None:
+def check_double(score: int, dealer_card_name: str) -> Action | None:
     match score:
         case 9:
-            if dealer_score <= 6:
+            if dealer_card_name in {"2", "3", "4", "5", "6"}:
                 return Action.DOUBLE
             return Action.TAKE
         case 10 | 11:
-            if dealer_score != 11:
-                if score == 11 or dealer_score != 10:
+            if dealer_card_name != "A":
+                if score == 11 or dealer_card_name in {"10", "J", "Q", "K"}:
                     return Action.DOUBLE
             return Action.TAKE
     return None
 
 
-def check_soft_hands(score: int, dealer_score: int) -> Action | None:
+def check_soft_hands(score: int, dealer_card_name: str) -> Action | None:
     match score:
         case 3 | 4 | 5 | 6 | 7:
-            if dealer_score <= 6:
+            if dealer_card_name in {"2", "3", "4", "5", "6"}:
                 return Action.DOUBLE
             return Action.TAKE
         case 8:
-            if dealer_score >= 9:
+            if dealer_card_name in {"9", "10", "J", "Q", "K", "A"}:
                 return Action.TAKE
             return Action.PASS
         case 9 | 10 | 11:
@@ -182,13 +182,13 @@ def check_soft_hands(score: int, dealer_score: int) -> Action | None:
     return None
 
 
-def check_steady_hands(score: int, dealer_score: int) -> Action | None:
+def check_steady_hands(score: int, dealer_card_name: str) -> Action | None:
     match score:
         case 4 | 5 | 6 | 7 | 8:
             return Action.TAKE
 
         case 12 | 13 | 14 | 15 | 16:
-            if dealer_score <= 6:
+            if dealer_card_name in {"2", "3", "4", "5", "6"}:
                 return Action.PASS
             return Action.TAKE
 

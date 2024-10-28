@@ -12,30 +12,16 @@ class Card:
     -------
     `__str__() -> str`:
         Returns a string representation of the card.
-
-    `set_scores() -> None`:
-        Sets the score of the card.
     """
 
     def __init__(self, suit: str, name: str | int) -> None:
         """Initializing a Card object"""
         self.suit = suit
         self.name = str(name)
-        self.scores: set[int] = set()
-        self.set_scores()
 
     def __str__(self) -> str:
         """Returns a string representation of the card."""
         return f"{self.name} of {self.suit}"
-
-    def set_scores(self) -> None:
-        """Sets the score of the card."""
-        if self.name in {"10", "J", "Q", "K"}:
-            self.scores.add(10)
-        elif self.name == "A":
-            self.scores.update((1, 11))
-        else:
-            self.scores.add(int(self.name))
 
 
 class Deck:
@@ -84,7 +70,7 @@ class Cards:
         if instance is None:
             return self
         if instance not in self.data:
-            self.data[instance] = {"cards": [], "scores": {0}, "history": []}
+            self.data[instance] = {"cards": [], "score": 0, "history": []}
         return self.data[instance]
 
     def __set__(self, instance: Any, value: Any) -> None:
@@ -99,6 +85,7 @@ class HandStates(Enum):
     LOSE = "Losing hand"
     BLACKJACK = "Blackjack"
     DRAWN_GAME = "Equal score"
+    OUT = "Out of the game"
 
 
 class Hand:
@@ -120,7 +107,7 @@ class Hand:
     `add_card(card: Card) -> None`:
         Adds a card to his hand and recalculates the scores.
 
-    `calculate_score(card: Card) -> None`:
+    `calculate_score() -> None`:
         Recalculate the scores.
 
     `check_blackjack() -> bool`:
@@ -183,22 +170,26 @@ class Hand:
             card (Card): the card that was added to the hand.
         """
         self.hand["cards"].append(card)
-        self.calculate_score(card)
+        self.calculate_score()
         self.hand["history"].append("add card")
 
-    def calculate_score(self, card: Card) -> None:
-        """
-        Recalculate the scores.
-
-        Args:
-            card (Card): the card that was added to the hand.
-        """
-        new_scores = set()
-        for score in card.scores:
-            new_scores.update(
-                set(map(lambda x: x + score, self.hand["scores"]))
-            )
-        self.hand["scores"] = new_scores
+    def calculate_score(self) -> None:
+        """Recalculate the scores."""
+        scores = {0}
+        for card in self.hand["cards"]:
+            match card.name:
+                case "A":
+                    scores = set(map(lambda x: x + 1, scores))
+                    scores.update(set(map(lambda x: x + 10, scores)))
+                case "K" | "Q" | "J" | "10":
+                    scores = set(map(lambda x: x + 10, scores))
+                case _:
+                    scores = set(map(lambda x: x + int(card.name), scores))
+        filter_scores = list(filter(lambda x: x <= 21, scores))
+        if len(filter_scores) == 0:
+            self.hand["score"] = -1
+        else:
+            self.hand["score"] = max(filter_scores)
 
     def check_blackjack(self) -> bool:
         """
@@ -207,7 +198,7 @@ class Hand:
         Returns:
             result (bool): is blackjack
         """
-        return 21 in self.hand["scores"] and len(self.hand["cards"]) == 2
+        return 21 == self.hand["score"] and len(self.hand["cards"]) == 2
 
     def get_card(self, id_card: int) -> Any:
         """
@@ -221,9 +212,9 @@ class Hand:
         """
         return self.hand["cards"][id_card]
 
-    def get_scores(self) -> Any:
+    def get_score(self) -> Any:
         """Returns the scores"""
-        return self.hand["scores"]
+        return self.hand["score"]
 
     def get_cards(self) -> Any:
         """Returns the cards"""
@@ -241,20 +232,19 @@ class Hand:
             print(card, end="; ")
         print()
 
-        print("Scores:", end=" ")
-        if 21 in self.hand["scores"]:
-            print(21)
-        elif min(self.hand["scores"]) > 21:
+        print("Score:", end=" ")
+        if self.hand["score"] == -1:
             print("bust")
         else:
-            print(
-                *[score for score in self.hand["scores"] if score <= 21],
-                sep=" or ",
-            )
+            print(self.hand["score"])
 
     def show_bet(self, id_player: int) -> None:
         """Displays the current bet in the console."""
-        print(f"Player's {id_player + 1} bet:", self.bet)
+        print(f"Player's {id_player + 1} bet:", end=" ")
+        if self.state is HandStates.OUT:
+            print("not enough chips")
+        else:
+            print(self.bet)
 
     def show_state(self) -> None:
         """Displays the current hand status in the console."""
