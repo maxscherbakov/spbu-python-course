@@ -33,6 +33,7 @@ players = [
     Player(strategy=Optimal1()),
     Player(strategy=Optimal2()),
     Player(strategy=Aggressive()),
+    Player(chips=15),
 ]
 blackjack = Game(players)
 play_round(blackjack)
