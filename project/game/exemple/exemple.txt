@@ -1,0 +1,154 @@
+The round has begun
+Round: 1
+
+
+Bets have been placed
+Player's 1 bet: 10
+Player's 2 bet: 10
+Player's 3 bet: 20
+
+
+The dealer took a closed and an open card
+The dealer's first card:
+10 of Spades
+
+
+The players took the cards
+Player 1's hand:
+Hand: 4 of Hearts; 7 of Spades; A of Diamonds;
+Scores: 12
+History of actions:
+['add card', 'add card', 'double down', 'add card', 'pass']
+
+Player 2's hand:
+Hand: J of Diamonds; K of Spades;
+Scores: 20
+History of actions:
+['add card', 'add card', 'pass']
+
+Player 3's hand:
+Hand: 9 of Clubs; A of Spades;
+Scores: 10 or 20
+History of actions:
+['add card', 'add card', 'pass']
+
+
+
+The dealer opens the second card
+Рука дилера:
+Hand: 10 of Spades; 5 of Spades;
+Scores: 15
+
+
+The dealer takes the cards
+Рука дилера:
+Hand: 10 of Spades; 5 of Spades; 9 of Spades;
+Scores: bust
+
+
+The results of the game are summarized
+The result of player 1
+Player 1's hand:
+Hand: 4 of Hearts; 7 of Spades; A of Diamonds;
+Scores: 12
+History of actions:
+['add card', 'add card', 'double down', 'add card', 'pass']
+Hand condition: Winning hand
+
+The result of player 2
+Player 2's hand:
+Hand: J of Diamonds; K of Spades;
+Scores: 20
+History of actions:
+['add card', 'add card', 'pass']
+Hand condition: Winning hand
+
+The result of player 3
+Player 3's hand:
+Hand: 9 of Clubs; A of Spades;
+Scores: 10 or 20
+History of actions:
+['add card', 'add card', 'pass']
+Hand condition: Winning hand
+
+
+
+The round is over
+
+
+The round has begun
+Round: 2
+
+
+Bets have been placed
+Player's 1 bet: 10
+Player's 2 bet: 10
+Player's 3 bet: 20
+
+
+The dealer took a closed and an open card
+The dealer's first card:
+Q of Diamonds
+
+
+The players took the cards
+Player 1's hand:
+Hand: J of Hearts; K of Diamonds;
+Scores: 20
+History of actions:
+['add card', 'add card', 'pass']
+
+Player 2's hand:
+Hand: 4 of Spades; 6 of Clubs; A of Spades;
+Scores: 21
+History of actions:
+['add card', 'add card', 'add card']
+
+Player 3's hand:
+Hand: K of Spades; J of Diamonds;
+Scores: 20
+History of actions:
+['add card', 'add card', 'pass']
+
+
+
+The dealer opens the second card
+Рука дилера:
+Hand: Q of Diamonds; A of Hearts;
+Scores: 21
+
+
+The dealer takes the cards
+Рука дилера:
+Hand: Q of Diamonds; A of Hearts;
+Scores: 21
+
+
+The results of the game are summarized
+The result of player 1
+Player 1's hand:
+Hand: J of Hearts; K of Diamonds;
+Scores: 20
+History of actions:
+['add card', 'add card', 'pass']
+Hand condition: Losing hand
+
+The result of player 2
+Player 2's hand:
+Hand: 4 of Spades; 6 of Clubs; A of Spades;
+Scores: 21
+History of actions:
+['add card', 'add card', 'add card']
+Hand condition: Equal score
+
+The result of player 3
+Player 3's hand:
+Hand: K of Spades; J of Diamonds;
+Scores: 20
+History of actions:
+['add card', 'add card', 'pass']
+Hand condition: Losing hand
+
+
+
+The round is over
