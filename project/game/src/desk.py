@@ -27,10 +27,10 @@ class Desk:
 
     """
 
-    def __init__(self, players: list[Player]) -> None:
+    def __init__(self, players: list[Player], dealer_num_deck: int) -> None:
         """Initializing a Desk object."""
         self.players = players
-        self.dealer = Dealer()
+        self.dealer = Dealer(dealer_num_deck)
         self.hands: dict[Player, list[Hand]] = {}
 
     def dealer_give_card(self, target_hand: Hand) -> None:
@@ -63,18 +63,9 @@ class Desk:
             id_hand (int): the number of the hand for which the split is selected.
         """
         hand = self.hands[player][id_hand]
-        bet = hand.bet
 
-        split_hand_1 = Hand()
-        split_hand_1.hand["history"] = ["split"]
-        split_hand_1.bet = bet
-        split_hand_1.add_card(hand.get_card(0))
+        split_hand_1, split_hand_2 = hand.split()
         self.dealer_give_card(split_hand_1)
-
-        split_hand_2 = Hand()
-        split_hand_2.hand["history"] = ["split"]
-        split_hand_2.bet = bet
-        split_hand_2.add_card(hand.get_card(1))
         self.dealer_give_card(split_hand_2)
 
         self.hands[player][id_hand] = split_hand_1

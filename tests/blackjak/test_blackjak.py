@@ -34,11 +34,12 @@ four = Card("suit", "4")
     ],
 )
 def test_game_states(players: list[Player], nums_steps: list[int]) -> None:
+    """Test that the state of the game changes depending on the steps played."""
     states = []
     for num_step in nums_steps:
         game = Game(players)
         game.play_steps(num_step)
-        states.append(game.round_state)
+        states.append(game._round_state)
 
     assert states == [
         GameStates.START,
@@ -65,6 +66,7 @@ def test_players_hands(
     expect_score1: int,
     expect_score2: int,
 ) -> None:
+    """Test of whether the score in the hand are correctly calculated."""
     player_hand1 = Hand()
     player_hand2 = Hand()
     for card in cards1:
@@ -82,6 +84,7 @@ def test_players_hands(
 
 
 def test_players_chips() -> None:
+    """Test that the score increases and decreases correctly."""
     players = [
         Player(strategy=Optimal1()),
         Player(strategy=Aggressive()),
@@ -93,7 +96,7 @@ def test_players_chips() -> None:
 
     for player in players:
         delta_chips = 0.0
-        for hand in game.desk.hands[player]:
+        for hand in game._desk.hands[player]:
             first_bet = player.strategy.first_bet
             if hand.state is HandStates.LOSE:
                 if hand.tripled_bet:
@@ -110,10 +113,10 @@ def test_players_chips() -> None:
                 else:
                     delta_chips += first_bet
             elif hand.state is HandStates.BLACKJACK:
-                dealer_hand = game.desk.dealer.hand
+                dealer_hand = game._desk.dealer.hand
                 first_card = dealer_hand.get_card(0)
                 if player.strategy.even_money and first_card.name == "A":
                     delta_chips += first_bet
-                elif not game.desk.dealer.hand.state is HandStates.BLACKJACK:
+                elif not game._desk.dealer.hand.state is HandStates.BLACKJACK:
                     delta_chips += 1.5 * first_bet
         assert player.chips == 100 + int(delta_chips)

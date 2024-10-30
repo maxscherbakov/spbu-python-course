@@ -40,7 +40,7 @@ class Deck:
 
     def __init__(self) -> None:
         """Initializing a Deck object"""
-        self.cards = [
+        self._cards = [
             Card(card[0], card[1])
             for card in product(
                 ["Spades", "Hearts", "Diamonds", "Clubs"],
@@ -51,11 +51,11 @@ class Deck:
 
     def shuffle(self) -> None:
         """Shuffles the deck of cards."""
-        random.shuffle(self.cards)
+        random.shuffle(self._cards)
 
     def pull(self) -> Card:
         """Removes and returns the card at the beginning of the deck."""
-        return self.cards.pop(0)
+        return self._cards.pop(0)
 
 
 class Cards:
@@ -64,17 +64,17 @@ class Cards:
     """
 
     def __init__(self) -> None:
-        self.data: dict[Hand, dict[str, Any]] = {}
+        self._data: dict[Hand, dict[str, Any]] = {}
 
     def __get__(self, instance: Any, owner: Any) -> Any:
         if instance is None:
             return self
-        if instance not in self.data:
-            self.data[instance] = {"cards": [], "score": 0, "history": []}
-        return self.data[instance]
+        if instance not in self._data:
+            self._data[instance] = {"cards": [], "score": 0, "history": []}
+        return self._data[instance]
 
     def __set__(self, instance: Any, value: Any) -> None:
-        self.data[instance] = value
+        self._data[instance] = value
 
 
 class HandStates(Enum):
@@ -104,6 +104,15 @@ class Hand:
     `tripling_bet() -> None`:
         Triples the bet.
 
+    'split() -> tuple["Hand", "Hand"]':
+        The method for calling the split hand.
+
+    'action_pass() -> None':
+        Performs the pass action
+
+    'even_money() -> None':
+        Performs the even money action
+
     `add_card(card: Card) -> None`:
         Adds a card to his hand and recalculates the scores.
 
@@ -120,7 +129,10 @@ class Hand:
         Returns the scores.
 
     'get_cards() -> Any':
-        Returns the cards
+        Returns the cards.
+
+    'get_history(self) -> Any':
+        Returns the history.
 
     'show_history() -> None':
         Displays the console history of the player's actions.
@@ -135,7 +147,7 @@ class Hand:
         Displays the current hand status in the console.
     """
 
-    hand = Cards()
+    _hand = Cards()
 
     def __init__(self) -> None:
         """Initializing a Deck object"""
@@ -154,13 +166,41 @@ class Hand:
         """Doubles the bet."""
         self.bet *= 2
         self.double_bet = True
-        self.hand["history"].append("double down")
+        self._hand["history"].append("double down")
 
     def tripling_bet(self) -> None:
         """Triples the bet."""
         self.bet += int(self.bet // 2)
         self.tripled_bet = True
-        self.hand["history"].append("tripling bet")
+        self._hand["history"].append("tripling bet")
+
+    def split(self) -> tuple["Hand", "Hand"]:
+        """
+        The method for calling the split hand.
+
+        Returns:
+            result ("Hand", "Hand"): two hands after the split.
+        """
+        bet = self._hand.bet
+
+        split_hand_1 = Hand()
+        split_hand_1._hand["history"] = ["split"]
+        split_hand_1.bet = bet
+        split_hand_1.add_card(self._hand.get_card(0))
+
+        split_hand_2 = Hand()
+        split_hand_2._hand["history"] = ["split"]
+        split_hand_2.bet = bet
+        split_hand_2.add_card(self._hand.get_card(1))
+        return split_hand_1, split_hand_2
+
+    def action_pass(self) -> None:
+        """Performs the pass action"""
+        self._hand["history"].append("pass")
+
+    def even_money(self) -> None:
+        """Performs the even money action"""
+        self._hand["history"].append("even money")
 
     def add_card(self, card: Card) -> None:
         """
@@ -169,14 +209,14 @@ class Hand:
         Args:
             card (Card): the card that was added to the hand.
         """
-        self.hand["cards"].append(card)
+        self._hand["cards"].append(card)
         self.calculate_score()
-        self.hand["history"].append("add card")
+        self._hand["history"].append("add card")
 
     def calculate_score(self) -> None:
         """Recalculate the scores."""
         scores = {0}
-        for card in self.hand["cards"]:
+        for card in self._hand["cards"]:
             match card.name:
                 case "A":
                     scores = set(map(lambda x: x + 1, scores))
@@ -187,9 +227,9 @@ class Hand:
                     scores = set(map(lambda x: x + int(card.name), scores))
         filter_scores = list(filter(lambda x: x <= 21, scores))
         if len(filter_scores) == 0:
-            self.hand["score"] = -1
+            self._hand["score"] = -1
         else:
-            self.hand["score"] = max(filter_scores)
+            self._hand["score"] = max(filter_scores)
 
     def check_blackjack(self) -> bool:
         """
@@ -198,7 +238,7 @@ class Hand:
         Returns:
             result (bool): is blackjack
         """
-        return 21 == self.hand["score"] and len(self.hand["cards"]) == 2
+        return 21 == self._hand["score"] and len(self._hand["cards"]) == 2
 
     def get_card(self, id_card: int) -> Any:
         """
@@ -210,33 +250,37 @@ class Hand:
         Returns:
             result (Any): card is under the desired index.
         """
-        return self.hand["cards"][id_card]
+        return self._hand["cards"][id_card]
 
     def get_score(self) -> Any:
         """Returns the scores"""
-        return self.hand["score"]
+        return self._hand["score"]
 
     def get_cards(self) -> Any:
         """Returns the cards"""
-        return self.hand["cards"]
+        return self._hand["cards"]
+
+    def get_history(self) -> Any:
+        """Returns the history."""
+        return self._hand["history"]
 
     def show_history(self) -> None:
         """Displays the console history of the player's actions."""
         print("History of actions:")
-        print(self.hand["history"], sep=", ")
+        print(self._hand["history"], sep=", ")
 
     def show_hand(self) -> None:
         """Displays the cards on your hand in the console."""
         print("Hand:", end=" ")
-        for card in self.hand["cards"]:
+        for card in self._hand["cards"]:
             print(card, end="; ")
         print()
 
         print("Score:", end=" ")
-        if self.hand["score"] == -1:
+        if self._hand["score"] == -1:
             print("bust")
         else:
-            print(self.hand["score"])
+            print(self._hand["score"])
 
     def show_bet(self, id_player: int) -> None:
         """Displays the current bet in the console."""

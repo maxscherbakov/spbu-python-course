@@ -64,86 +64,87 @@ class Game:
     `get_state() -> GameStates`:
         Returns the game state.
 
-    `play_steps(num_steps: int = 8) -> Nones`:
+    `play_steps(num_steps: int = 8) -> None`:
         Performs the first n steps of the game.
     """
 
-    def __init__(self, players: list[Player]) -> None:
+    def __init__(
+        self, players: list[Player], dealer_num_deck: int = 1
+    ) -> None:
         """Initializing a Game object"""
-        self.desk = Desk(players)
-        self.num_round = 0
-        self.round_state = GameStates.START
+        self._desk = Desk(players, dealer_num_deck)
+        self._num_round = 0
+        self._round_state = GameStates.START
 
     def show_state(self) -> None:
         """The method of displaying information depending on the current state of the game."""
-        print(self.round_state.value)
-        match self.round_state:
+        print(self._round_state.value)
+        match self._round_state:
             case GameStates.START:
-                print("Round:", self.num_round)
+                print("Round:", self._num_round)
             case GameStates.PLACE_BETS:
-                for id_player, player in enumerate(self.desk.players):
-                    self.desk.hands[player][0].show_bet(id_player)
+                for id_player, player in enumerate(self._desk.players):
+                    self._desk.hands[player][0].show_bet(id_player)
             case GameStates.TOOK_CARDS:
-                for id_player, player in enumerate(self.desk.players):
-                    if self.desk.hands[player][0].state is HandStates.OUT:
+                for id_player, player in enumerate(self._desk.players):
+                    if self._desk.hands[player][0].state is HandStates.OUT:
                         continue
-                    for hand in self.desk.hands[player]:
+                    for hand in self._desk.hands[player]:
                         show_hand_player(hand, id_player)
                         hand.show_history()
                     print()
             case GameStates.RESULTS:
-                for id_player, player in enumerate(self.desk.players):
-                    if self.desk.hands[player][0].state is HandStates.OUT:
+                for id_player, player in enumerate(self._desk.players):
+                    if self._desk.hands[player][0].state is HandStates.OUT:
                         continue
                     print(f"The result of player {id_player + 1}")
-                    for hand in self.desk.hands[player]:
+                    for hand in self._desk.hands[player]:
                         show_hand_player(hand, id_player)
                         hand.show_history()
                         hand.show_state()
                     print()
             case GameStates.DEALER_START:
                 print("The dealer's first card:")
-                print(self.desk.dealer.hand.get_card(0))
+                print(self._desk.dealer.hand.get_card(0))
             case GameStates.DEALER_PLAY:
-                self.desk.dealer.show_hand()
+                self._desk.dealer.show_hand()
             case GameStates.DEALER_SECOND_CARD:
-                self.desk.dealer.show_hand()
-        print()
-        print()
+                self._desk.dealer.show_hand()
+        print("\n")
 
     def start_game(self) -> None:
         """Sets the initial parameters before starting the game."""
-        self.round_state = GameStates.START
-        self.num_round += 1
-        self.desk.next()
+        self._round_state = GameStates.START
+        self._num_round += 1
+        self._desk.next()
 
     def place_bets(self) -> None:
         """The players place their first bets."""
-        self.round_state = GameStates.PLACE_BETS
-        self.desk.place_first_bets()
+        self._round_state = GameStates.PLACE_BETS
+        self._desk.place_first_bets()
 
     def dealer_start(self) -> None:
         """The dealer took a closed and an open card."""
-        self.round_state = GameStates.DEALER_START
-        self.desk.dealer_give_card(self.desk.dealer.hand)
-        self.desk.dealer_give_card(self.desk.dealer.hand)
+        self._round_state = GameStates.DEALER_START
+        self._desk.dealer_give_card(self._desk.dealer.hand)
+        self._desk.dealer_give_card(self._desk.dealer.hand)
 
     def take_cards(self) -> None:
         """The players take the cards according to the strategy."""
-        self.round_state = GameStates.TOOK_CARDS
-        dealer_card = self.desk.dealer.hand.get_card(0)
-        for id_player, player in enumerate(self.desk.players):
-            player_hand = self.desk.hands[player][0]
+        self._round_state = GameStates.TOOK_CARDS
+        dealer_card = self._desk.dealer.hand.get_card(0)
+        for id_player, player in enumerate(self._desk.players):
+            player_hand = self._desk.hands[player][0]
             if not player_hand.in_playing:
                 continue
-            self.desk.dealer_give_card(self.desk.hands[player][0])
-            self.desk.dealer_give_card(self.desk.hands[player][0])
+            self._desk.dealer_give_card(self._desk.hands[player][0])
+            self._desk.dealer_give_card(self._desk.hands[player][0])
 
             if player_hand.check_blackjack():
                 player_hand.state = HandStates.BLACKJACK
             if (
                 player_hand.state is HandStates.BLACKJACK
-                and not self.desk.dealer.hand.get_card(0).name
+                and not self._desk.dealer.hand.get_card(0).name
                 in {
                     "10",
                     "J",
@@ -157,10 +158,10 @@ class Game:
                 continue
             elif (
                 player_hand.state is HandStates.BLACKJACK
-                and self.desk.dealer.hand.get_card(0).name == "A"
+                and self._desk.dealer.hand.get_card(0).name == "A"
             ):
                 if player.strategy.even_money:
-                    player_hand.hand["history"].append("even money")
+                    player_hand.even_money()
                     player.chips += player_hand.bet * 2
                     player_hand.game_over()
                     continue
@@ -170,40 +171,41 @@ class Game:
 
     def dealer_second_card(self) -> None:
         """The dealer opens the second card."""
-        self.round_state = GameStates.DEALER_SECOND_CARD
-        for (id_player, player) in enumerate(self.desk.players):
-            for id_hand, hand in enumerate(self.desk.hands[player]):
+        self._round_state = GameStates.DEALER_SECOND_CARD
+        for (id_player, player) in enumerate(self._desk.players):
+            for id_hand, hand in enumerate(self._desk.hands[player]):
                 if not hand.in_playing:
                     continue
 
                 if (
                     hand.state is HandStates.BLACKJACK
-                    and not self.desk.dealer.hand.state is HandStates.BLACKJACK
+                    and not self._desk.dealer.hand.state
+                    is HandStates.BLACKJACK
                 ):
                     player.chips += int(hand.bet * 2.5)
                     hand.game_over()
                 elif (
                     not hand.state is HandStates.BLACKJACK
-                    and self.desk.dealer.hand.state is HandStates.BLACKJACK
+                    and self._desk.dealer.hand.state is HandStates.BLACKJACK
                 ):
                     hand.state = HandStates.LOSE
                     hand.game_over()
 
     def dealer_play(self) -> None:
         """The dealer takes the missing cards."""
-        self.round_state = GameStates.DEALER_PLAY
+        self._round_state = GameStates.DEALER_PLAY
         while True:
-            dealer_score = self.desk.dealer.hand.get_score()
+            dealer_score = self._desk.dealer.hand.get_score()
             if dealer_score == -1 or dealer_score >= 17:
                 break
-            self.desk.dealer_give_card(self.desk.dealer.hand)
+            self._desk.dealer_give_card(self._desk.dealer.hand)
 
     def round_results(self) -> None:
         """The results of the game are summarized."""
-        self.round_state = GameStates.RESULTS
-        dealer_score = self.desk.dealer.hand.get_score()
-        for (id_player, player) in enumerate(self.desk.players):
-            for id_hand, hand in enumerate(self.desk.hands[player]):
+        self._round_state = GameStates.RESULTS
+        dealer_score = self._desk.dealer.hand.get_score()
+        for (id_player, player) in enumerate(self._desk.players):
+            for id_hand, hand in enumerate(self._desk.hands[player]):
                 if not hand.in_playing:
                     continue
 
@@ -224,7 +226,7 @@ class Game:
 
     def end_round(self) -> None:
         """Completes the round."""
-        self.round_state = GameStates.END
+        self._round_state = GameStates.END
 
     def play_with_player(self, id_player: int, dealer_card: Card) -> bool:
         """
@@ -237,9 +239,9 @@ class Game:
         Returns:
             result (bool): a flag indicating that the player has not finished the game.
         """
-        target_player = self.desk.players[id_player]
-        for id_hand, hand in enumerate(self.desk.hands[target_player]):
-            if not hand.in_playing or hand.hand["history"] == "pass":
+        target_player = self._desk.players[id_player]
+        for id_hand, hand in enumerate(self._desk.hands[target_player]):
+            if not hand.in_playing or hand.get_history()[-1] == "pass":
                 continue
             while True:
                 score = hand.get_score()
@@ -253,35 +255,35 @@ class Game:
                 action = target_player.strategy.play(hand, dealer_card)
                 match action:
                     case Action.PASS:
-                        hand.hand["history"].append("pass")
+                        hand.action_pass()
                         break
 
                     case Action.TAKE:
-                        self.desk.dealer_give_card(hand)
+                        self._desk.dealer_give_card(hand)
 
                     case Action.SPLIT:
-                        if not self.desk.check_bet(id_player, hand.bet):
-                            hand.hand["history"].append("pass")
+                        if not self._desk.check_bet(id_player, hand.bet):
+                            hand.action_pass()
                             break
                         target_player.chips -= hand.bet
-                        self.desk.split(target_player, id_hand)
+                        self._desk.split(target_player, id_hand)
                         return True
 
                     case Action.DOUBLE:
-                        if not self.desk.check_bet(id_player, hand.bet):
-                            self.desk.dealer_give_card(hand)
+                        if not self._desk.check_bet(id_player, hand.bet):
+                            self._desk.dealer_give_card(hand)
                             continue
                         target_player.chips -= hand.bet
                         hand.double_down()
-                        self.desk.dealer_give_card(hand)
+                        self._desk.dealer_give_card(hand)
 
                     case Action.TRIPLING:
                         if not hand.double_bet:
                             raise ValueError(
                                 "Before tripling the bets, you need to double them."
                             )
-                        if not self.desk.check_bet(id_player, hand.bet // 2):
-                            self.desk.dealer_give_card(hand)
+                        if not self._desk.check_bet(id_player, hand.bet // 2):
+                            self._desk.dealer_give_card(hand)
                             continue
                         target_player.chips -= hand.bet // 2
                         hand.tripling_bet()
@@ -295,7 +297,7 @@ class Game:
 
     def get_state(self) -> GameStates:
         """Returns the game state."""
-        return self.round_state
+        return self._round_state
 
     def play_steps(self, num_steps: int = 8) -> None:
         """Performs the first number steps of the game."""

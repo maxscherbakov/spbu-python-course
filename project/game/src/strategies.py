@@ -124,6 +124,16 @@ class Optimal2(Strategy):
 
 
 def check_split(cards: list[Card], dealer_card_name: str) -> Action | None:
+    """
+    The function checks whether it is worth doing a split.
+
+    Args:
+        cards (list[Card]): the cards are in the player's hand.
+        dealer_card_name (str): the dealer's open card.
+
+    Returns:
+        result (Action | None): the action taken.
+    """
     if len(cards) != 2:
         return None
     if cards[1].name == cards[0].name:
@@ -154,6 +164,16 @@ def check_split(cards: list[Card], dealer_card_name: str) -> Action | None:
 
 
 def check_double(score: int, dealer_card_name: str) -> Action | None:
+    """
+    A function that checks whether it is worth doubling the bet.
+
+    Args:
+        score (int): the player's current score.
+        dealer_card_name (str): the dealer's open card.
+
+    Returns:
+        result (Action | None): the action taken.
+    """
     match score:
         case 9:
             if dealer_card_name in {"2", "3", "4", "5", "6"}:
@@ -168,6 +188,16 @@ def check_double(score: int, dealer_card_name: str) -> Action | None:
 
 
 def check_soft_hands(score: int, dealer_card_name: str) -> Action | None:
+    """
+    The decision-making function for a soft hand.
+
+    Args:
+        score (int): the player's current score.
+        dealer_card_name (str): the dealer's open card.
+
+    Returns:
+        result (Action | None): the action taken.
+    """
     match score:
         case 3 | 4 | 5 | 6 | 7:
             if dealer_card_name in {"2", "3", "4", "5", "6"}:
@@ -183,6 +213,16 @@ def check_soft_hands(score: int, dealer_card_name: str) -> Action | None:
 
 
 def check_steady_hands(score: int, dealer_card_name: str) -> Action | None:
+    """
+    The decision-making function for a steady hand.
+
+    Args:
+        score (int): the player's current score.
+        dealer_card_name (str): the dealer's open card.
+
+    Returns:
+        result (Action | None): the action taken.
+    """
     match score:
         case 4 | 5 | 6 | 7 | 8:
             return Action.TAKE
