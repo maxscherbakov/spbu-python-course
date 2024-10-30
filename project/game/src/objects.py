@@ -181,17 +181,17 @@ class Hand:
         Returns:
             result ("Hand", "Hand"): two hands after the split.
         """
-        bet = self._hand.bet
+        bet = self.bet
 
         split_hand_1 = Hand()
         split_hand_1._hand["history"] = ["split"]
         split_hand_1.bet = bet
-        split_hand_1.add_card(self._hand.get_card(0))
+        split_hand_1.add_card(self.get_card(0))
 
         split_hand_2 = Hand()
         split_hand_2._hand["history"] = ["split"]
         split_hand_2.bet = bet
-        split_hand_2.add_card(self._hand.get_card(1))
+        split_hand_2.add_card(self.get_card(1))
         return split_hand_1, split_hand_2
 
     def action_pass(self) -> None:
