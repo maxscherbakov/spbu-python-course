@@ -6,12 +6,30 @@ from project.game.src.strategies import Basic, Strategy
 class Player:
     """
     The player's class stores the number of chips and the strategy of the game.
+
+    Methods:
+    -------
+    'diff_chips(delta: int) -> None':
+        Calculates the difference of chips.
+
+    'check_bet(self, bet: int) -> bool':
+        Checks if the player has enough chips to bet.
     """
 
     def __init__(self, strategy: Strategy = Basic(), chips: int = 100) -> None:
         """Initializing a Player object."""
         self.strategy = strategy
-        self.chips = chips
+        self._chips = chips
+
+    def diff_chips(self, delta: int) -> None:
+        """Calculates the difference of chips."""
+        self._chips += delta
+
+    def check_bet(self, bet: int) -> bool:
+        """Checks if the player has enough chips to bet."""
+        if bet > self._chips:
+            return False
+        return True
 
 
 class Dealer:

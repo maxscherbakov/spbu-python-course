@@ -87,7 +87,10 @@ class Game:
                     self._desk.hands[player][0].show_bet(id_player)
             case GameStates.TOOK_CARDS:
                 for id_player, player in enumerate(self._desk.players):
-                    if self._desk.hands[player][0].state is HandStates.OUT:
+                    if (
+                        self._desk.hands[player][0].get_state()
+                        is HandStates.OUT
+                    ):
                         continue
                     for hand in self._desk.hands[player]:
                         show_hand_player(hand, id_player)
@@ -95,7 +98,10 @@ class Game:
                     print()
             case GameStates.RESULTS:
                 for id_player, player in enumerate(self._desk.players):
-                    if self._desk.hands[player][0].state is HandStates.OUT:
+                    if (
+                        self._desk.hands[player][0].get_state()
+                        is HandStates.OUT
+                    ):
                         continue
                     print(f"The result of player {id_player + 1}")
                     for hand in self._desk.hands[player]:
@@ -141,9 +147,9 @@ class Game:
             self._desk.dealer_give_card(self._desk.hands[player][0])
 
             if player_hand.check_blackjack():
-                player_hand.state = HandStates.BLACKJACK
+                player_hand._state = HandStates.BLACKJACK
             if (
-                player_hand.state is HandStates.BLACKJACK
+                player_hand.get_state() is HandStates.BLACKJACK
                 and not self._desk.dealer.hand.get_card(0).name
                 in {
                     "10",
@@ -153,16 +159,16 @@ class Game:
                     "A",
                 }
             ):
-                player.chips += int(player_hand.bet * 2.5)
+                player.diff_chips(int(player_hand.get_bet() * 2.5))
                 player_hand.game_over()
                 continue
             elif (
-                player_hand.state is HandStates.BLACKJACK
+                player_hand.get_state() is HandStates.BLACKJACK
                 and self._desk.dealer.hand.get_card(0).name == "A"
             ):
                 if player.strategy.even_money:
                     player_hand.even_money()
-                    player.chips += player_hand.bet * 2
+                    player.diff_chips(int(player_hand.get_bet() * 2))
                     player_hand.game_over()
                     continue
 
@@ -178,17 +184,18 @@ class Game:
                     continue
 
                 if (
-                    hand.state is HandStates.BLACKJACK
-                    and not self._desk.dealer.hand.state
+                    hand.get_state() is HandStates.BLACKJACK
+                    and not self._desk.dealer.hand.get_state()
                     is HandStates.BLACKJACK
                 ):
-                    player.chips += int(hand.bet * 2.5)
+                    player.diff_chips(int(hand.get_bet() * 2.5))
                     hand.game_over()
                 elif (
-                    not hand.state is HandStates.BLACKJACK
-                    and self._desk.dealer.hand.state is HandStates.BLACKJACK
+                    not hand.get_state() is HandStates.BLACKJACK
+                    and self._desk.dealer.hand.get_state()
+                    is HandStates.BLACKJACK
                 ):
-                    hand.state = HandStates.LOSE
+                    hand._state = HandStates.LOSE
                     hand.game_over()
 
     def dealer_play(self) -> None:
@@ -212,16 +219,16 @@ class Game:
                 hand_score = hand.get_score()
 
                 if hand_score > dealer_score:
-                    hand.state = HandStates.WIN
-                    player.chips += hand.bet * 2
+                    hand._state = HandStates.WIN
+                    player.diff_chips(hand.get_bet() * 2)
                     hand.game_over()
 
                 elif hand_score == dealer_score:
-                    hand.state = HandStates.DRAWN_GAME
-                    player.chips += hand.bet
+                    hand._state = HandStates.DRAWN_GAME
+                    player.diff_chips(hand.get_bet())
                     hand.game_over()
                 else:
-                    hand.state = HandStates.LOSE
+                    hand._state = HandStates.LOSE
                     hand.game_over()
 
     def end_round(self) -> None:
@@ -246,7 +253,7 @@ class Game:
             while True:
                 score = hand.get_score()
                 if score == -1:
-                    hand.state = HandStates.LOSE
+                    hand._state = HandStates.LOSE
                     hand.game_over()
                     break
                 elif score == 21:
@@ -262,18 +269,18 @@ class Game:
                         self._desk.dealer_give_card(hand)
 
                     case Action.SPLIT:
-                        if not self._desk.check_bet(id_player, hand.bet):
+                        if not target_player.check_bet(hand.get_bet()):
                             hand.action_pass()
                             break
-                        target_player.chips -= hand.bet
+                        target_player.diff_chips(-hand.get_bet())
                         self._desk.split(target_player, id_hand)
                         return True
 
                     case Action.DOUBLE:
-                        if not self._desk.check_bet(id_player, hand.bet):
+                        if not target_player.check_bet(hand.get_bet()):
                             self._desk.dealer_give_card(hand)
                             continue
-                        target_player.chips -= hand.bet
+                        target_player.diff_chips(-hand.get_bet())
                         hand.double_down()
                         self._desk.dealer_give_card(hand)
 
@@ -282,15 +289,15 @@ class Game:
                             raise ValueError(
                                 "Before tripling the bets, you need to double them."
                             )
-                        if not self._desk.check_bet(id_player, hand.bet // 2):
+                        if not target_player.check_bet(hand.get_bet() // 2):
                             self._desk.dealer_give_card(hand)
                             continue
-                        target_player.chips -= hand.bet // 2
+                        target_player.diff_chips(-hand.get_bet() // 2)
                         hand.tripling_bet()
 
                     case Action.SURRENDER:
-                        target_player.chips += hand.bet // 2
-                        hand.state = HandStates.LOSE
+                        target_player.diff_chips(hand.get_bet() // 2)
+                        hand._state = HandStates.LOSE
                         hand.game_over()
                         break
         return False

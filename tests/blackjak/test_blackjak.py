@@ -98,25 +98,25 @@ def test_players_chips() -> None:
         delta_chips = 0.0
         for hand in game._desk.hands[player]:
             first_bet = player.strategy.first_bet
-            if hand.state is HandStates.LOSE:
+            if hand._state is HandStates.LOSE:
                 if hand.tripled_bet:
                     delta_chips -= first_bet * 3
                 elif hand.double_bet:
                     delta_chips -= first_bet * 2
                 else:
                     delta_chips -= first_bet
-            elif hand.state is HandStates.WIN:
+            elif hand._state is HandStates.WIN:
                 if hand.tripled_bet:
                     delta_chips += first_bet * 3
                 elif hand.double_bet:
                     delta_chips += first_bet * 2
                 else:
                     delta_chips += first_bet
-            elif hand.state is HandStates.BLACKJACK:
+            elif hand._state is HandStates.BLACKJACK:
                 dealer_hand = game._desk.dealer.hand
                 first_card = dealer_hand.get_card(0)
                 if player.strategy.even_money and first_card.name == "A":
                     delta_chips += first_bet
-                elif not game._desk.dealer.hand.state is HandStates.BLACKJACK:
+                elif not game._desk.dealer.hand._state is HandStates.BLACKJACK:
                     delta_chips += 1.5 * first_bet
-        assert player.chips == 100 + int(delta_chips)
+        assert player._chips == 100 + int(delta_chips)

@@ -98,6 +98,9 @@ class Hand:
     `game_over() -> None`:
         Resets the bet and withdraws the hand from the game.
 
+    'out() -> None':
+        Switches the hand to an out-of-play state.
+
     `double_down() -> None`:
         Doubles the bet.
 
@@ -119,6 +122,9 @@ class Hand:
     `calculate_score() -> None`:
         Recalculate the scores.
 
+    'set_first_bet(first_bet: int) -> None':
+        If there is no first bid, then sets it.
+
     `check_blackjack() -> bool`:
         Check if there is a blackjack on this hand.
 
@@ -131,8 +137,14 @@ class Hand:
     'get_cards() -> Any':
         Returns the cards.
 
-    'get_history(self) -> Any':
+    'get_history() -> Any':
         Returns the history.
+
+    'get_bet() -> int':
+        Returns the bet.
+
+    'get_state() -> HandStates':
+        Returns the hand state.
 
     'show_history() -> None':
         Displays the console history of the player's actions.
@@ -151,26 +163,31 @@ class Hand:
 
     def __init__(self) -> None:
         """Initializing a Deck object"""
-        self.bet = 0
+        self._bet = 0
         self.in_playing = True
         self.double_bet = False
         self.tripled_bet = False
-        self.state = HandStates.DEFAULT
+        self._state = HandStates.DEFAULT
 
     def game_over(self) -> None:
         """Resets the bet and withdraws the hand from the game."""
-        self.bet = 0
+        self._bet = 0
         self.in_playing = False
+
+    def out(self) -> None:
+        """Switches the hand to an out-of-play state."""
+        self.game_over()
+        self._state = HandStates.OUT
 
     def double_down(self) -> None:
         """Doubles the bet."""
-        self.bet *= 2
+        self._bet *= 2
         self.double_bet = True
         self._hand["history"].append("double down")
 
     def tripling_bet(self) -> None:
         """Triples the bet."""
-        self.bet += int(self.bet // 2)
+        self._bet += int(self._bet // 2)
         self.tripled_bet = True
         self._hand["history"].append("tripling bet")
 
@@ -181,16 +198,16 @@ class Hand:
         Returns:
             result ("Hand", "Hand"): two hands after the split.
         """
-        bet = self.bet
+        bet = self._bet
 
         split_hand_1 = Hand()
         split_hand_1._hand["history"] = ["split"]
-        split_hand_1.bet = bet
+        split_hand_1._bet = bet
         split_hand_1.add_card(self.get_card(0))
 
         split_hand_2 = Hand()
         split_hand_2._hand["history"] = ["split"]
-        split_hand_2.bet = bet
+        split_hand_2._bet = bet
         split_hand_2.add_card(self.get_card(1))
         return split_hand_1, split_hand_2
 
@@ -231,6 +248,11 @@ class Hand:
         else:
             self._hand["score"] = max(filter_scores)
 
+    def set_first_bet(self, first_bet: int) -> None:
+        """If there is no first bid, then sets it."""
+        if self._bet == 0:
+            self._bet = first_bet
+
     def check_blackjack(self) -> bool:
         """
         Check if there is a blackjack on this hand.
@@ -264,6 +286,14 @@ class Hand:
         """Returns the history."""
         return self._hand["history"]
 
+    def get_bet(self) -> int:
+        """Returns the bet."""
+        return self._bet
+
+    def get_state(self) -> HandStates:
+        """Returns the hand state."""
+        return self._state
+
     def show_history(self) -> None:
         """Displays the console history of the player's actions."""
         print("History of actions:")
@@ -285,11 +315,11 @@ class Hand:
     def show_bet(self, id_player: int) -> None:
         """Displays the current bet in the console."""
         print(f"Player's {id_player + 1} bet:", end=" ")
-        if self.state is HandStates.OUT:
+        if self._state is HandStates.OUT:
             print("not enough chips")
         else:
-            print(self.bet)
+            print(self._bet)
 
     def show_state(self) -> None:
         """Displays the current hand status in the console."""
-        print("Hand condition:", self.state.value)
+        print("Hand condition:", self._state.value)
