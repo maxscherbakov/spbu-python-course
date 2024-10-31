@@ -31,34 +31,34 @@ class Game:
 
     Methods:
     -------
-    `show_state() -> None`:
+    `_show_state() -> None`:
         The method of displaying information depending on the current state of the game.
 
-    `start_game() -> None`:
+    `_start_game() -> None`:
         Sets the initial parameters before starting the game.
 
-    `place_bets() -> None`:
+    `_place_bets() -> None`:
         The players place their first bets.
 
-    `dealer_start() -> None`:
+    `_dealer_start() -> None`:
         The dealer starts the game.
 
-    `take_cards() -> None`:
+    `_take_cards() -> None`:
         The players take the cards according to the strategy.
 
-    `dealer_second_card() -> None`:
+    `_dealer_second_card() -> None`:
         The dealer opens the second card.
 
-    `dealer_play() -> None`:
+    `_dealer_play() -> None`:
         The dealer takes the missing cards.
 
-    `round_results() -> None`:
+    `_round_results() -> None`:
         The results of the game are summarized.
 
-    `end_round() -> None`:
+    `_end_round() -> None`:
         Completes the round.
 
-    `play_with_player(id_player: int, dealer_card: Card) -> bool`:
+    `_play_with_player(id_player: int, dealer_card: Card) -> bool`:
         Player takes the cards depending on the strategy.
 
     `get_state() -> GameStates`:
@@ -66,6 +66,9 @@ class Game:
 
     `play_steps(num_steps: int = 8) -> None`:
         Performs the first n steps of the game.
+
+    'play_round_with_show_states(self) -> None'
+        Starts a full round and outputs information to the console at each stage.
     """
 
     def __init__(
@@ -76,7 +79,7 @@ class Game:
         self._num_round = 0
         self._round_state = GameStates.START
 
-    def show_state(self) -> None:
+    def _show_state(self) -> None:
         """The method of displaying information depending on the current state of the game."""
         print(self._round_state.value)
         match self._round_state:
@@ -118,24 +121,24 @@ class Game:
                 self._desk.dealer.show_hand()
         print("\n")
 
-    def start_game(self) -> None:
+    def _start_game(self) -> None:
         """Sets the initial parameters before starting the game."""
         self._round_state = GameStates.START
         self._num_round += 1
         self._desk.next()
 
-    def place_bets(self) -> None:
+    def _place_bets(self) -> None:
         """The players place their first bets."""
         self._round_state = GameStates.PLACE_BETS
         self._desk.place_first_bets()
 
-    def dealer_start(self) -> None:
+    def _dealer_start(self) -> None:
         """The dealer took a closed and an open card."""
         self._round_state = GameStates.DEALER_START
         self._desk.dealer_give_card(self._desk.dealer.hand)
         self._desk.dealer_give_card(self._desk.dealer.hand)
 
-    def take_cards(self) -> None:
+    def _take_cards(self) -> None:
         """The players take the cards according to the strategy."""
         self._round_state = GameStates.TOOK_CARDS
         dealer_card = self._desk.dealer.hand.get_card(0)
@@ -172,10 +175,10 @@ class Game:
                     player_hand.game_over()
                     continue
 
-            while self.play_with_player(id_player, dealer_card):
+            while self._play_with_player(id_player, dealer_card):
                 pass
 
-    def dealer_second_card(self) -> None:
+    def _dealer_second_card(self) -> None:
         """The dealer opens the second card."""
         self._round_state = GameStates.DEALER_SECOND_CARD
         for (id_player, player) in enumerate(self._desk.players):
@@ -198,7 +201,7 @@ class Game:
                     hand._state = HandStates.LOSE
                     hand.game_over()
 
-    def dealer_play(self) -> None:
+    def _dealer_play(self) -> None:
         """The dealer takes the missing cards."""
         self._round_state = GameStates.DEALER_PLAY
         while True:
@@ -207,7 +210,7 @@ class Game:
                 break
             self._desk.dealer_give_card(self._desk.dealer.hand)
 
-    def round_results(self) -> None:
+    def _round_results(self) -> None:
         """The results of the game are summarized."""
         self._round_state = GameStates.RESULTS
         dealer_score = self._desk.dealer.hand.get_score()
@@ -231,11 +234,11 @@ class Game:
                     hand._state = HandStates.LOSE
                     hand.game_over()
 
-    def end_round(self) -> None:
+    def _end_round(self) -> None:
         """Completes the round."""
         self._round_state = GameStates.END
 
-    def play_with_player(self, id_player: int, dealer_card: Card) -> bool:
+    def _play_with_player(self, id_player: int, dealer_card: Card) -> bool:
         """
         Player takes the cards depending on the strategy.
 
@@ -311,39 +314,65 @@ class Game:
         if not num_steps:
             return
 
-        self.start_game()
+        self._start_game()
         num_steps -= 1
         if not num_steps:
             return
 
-        self.place_bets()
+        self._place_bets()
         num_steps -= 1
         if not num_steps:
             return
 
-        self.dealer_start()
+        self._dealer_start()
         num_steps -= 1
         if not num_steps:
             return
 
-        self.take_cards()
+        self._take_cards()
         num_steps -= 1
         if not num_steps:
             return
 
-        self.dealer_second_card()
+        self._dealer_second_card()
         num_steps -= 1
         if not num_steps:
             return
 
-        self.dealer_play()
+        self._dealer_play()
         num_steps -= 1
         if not num_steps:
             return
 
-        self.round_results()
+        self._round_results()
         num_steps -= 1
         if not num_steps:
             return
 
-        self.end_round()
+        self._end_round()
+
+    def play_round_with_show_states(self) -> None:
+        """Performs a full round and outputs information to the console at each stage."""
+        self._start_game()
+        self._show_state()
+
+        self._place_bets()
+        self._show_state()
+
+        self._dealer_start()
+        self._show_state()
+
+        self._take_cards()
+        self._show_state()
+
+        self._dealer_second_card()
+        self._show_state()
+
+        self._dealer_play()
+        self._show_state()
+
+        self._round_results()
+        self._show_state()
+
+        self._end_round()
+        self._show_state()
