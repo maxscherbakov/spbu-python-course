@@ -1,0 +1,170 @@
+The round has begun
+Round: 1
+
+
+Bets have been placed
+Player's 1 bet: 10
+Player's 2 bet: 10
+Player's 3 bet: 20
+Player's 4 bet: 10
+
+
+The dealer took a closed and an open card
+The dealer's first card:
+4 of Diamonds
+
+
+The players took the cards
+Player 1's hand:
+Hand: 5 of Clubs; 9 of Hearts;
+Score: 14
+History of actions:
+['add card', 'add card', 'pass']
+
+Player 2's hand:
+Hand: 4 of Spades; 6 of Diamonds; 3 of Hearts; 8 of Clubs;
+Score: 21
+History of actions:
+['add card', 'add card', 'double down', 'add card', 'add card']
+
+Player 3's hand:
+Hand: 10 of Spades; 9 of Clubs; 3 of Spades;
+Score: bust
+History of actions:
+['add card', 'add card', 'add card']
+
+Player 4's hand:
+Hand: 8 of Spades; Q of Clubs;
+Score: 18
+History of actions:
+['add card', 'add card', 'pass']
+
+
+
+The dealer opens the second card
+Dealer's Hand:
+Hand: 4 of Diamonds; 3 of Clubs;
+Score: 7
+
+
+The dealer takes the cards
+Dealer's Hand:
+Hand: 4 of Diamonds; 3 of Clubs; 6 of Hearts; 2 of Spades; 5 of Hearts;
+Score: 20
+
+
+The results of the game are summarized
+The result of player 1
+Player 1's hand:
+Hand: 5 of Clubs; 9 of Hearts;
+Score: 14
+History of actions:
+['add card', 'add card', 'pass']
+Hand condition: Losing hand
+
+The result of player 2
+Player 2's hand:
+Hand: 4 of Spades; 6 of Diamonds; 3 of Hearts; 8 of Clubs;
+Score: 21
+History of actions:
+['add card', 'add card', 'double down', 'add card', 'add card']
+Hand condition: Winning hand
+
+The result of player 3
+Player 3's hand:
+Hand: 10 of Spades; 9 of Clubs; 3 of Spades;
+Score: bust
+History of actions:
+['add card', 'add card', 'add card']
+Hand condition: Losing hand
+
+The result of player 4
+Player 4's hand:
+Hand: 8 of Spades; Q of Clubs;
+Score: 18
+History of actions:
+['add card', 'add card', 'pass']
+Hand condition: Losing hand
+
+
+
+The round is over
+
+
+The round has begun
+Round: 2
+
+
+Bets have been placed
+Player's 1 bet: 10
+Player's 2 bet: 10
+Player's 3 bet: 20
+Player's 4 bet: not enough chips
+
+
+The dealer took a closed and an open card
+The dealer's first card:
+6 of Spades
+
+
+The players took the cards
+Player 1's hand:
+Hand: Q of Diamonds; 10 of Hearts;
+Score: 20
+History of actions:
+['add card', 'add card', 'pass']
+
+Player 2's hand:
+Hand: A of Spades; 5 of Spades; 7 of Hearts; 4 of Clubs;
+Score: 17
+History of actions:
+['add card', 'add card', 'add card', 'add card', 'pass']
+
+Player 3's hand:
+Hand: K of Spades; 7 of Diamonds; 3 of Spades;
+Score: 20
+History of actions:
+['add card', 'add card', 'add card', 'pass']
+
+
+
+The dealer opens the second card
+Dealer's Hand:
+Hand: 6 of Spades; 5 of Hearts;
+Score: 11
+
+
+The dealer takes the cards
+Dealer's Hand:
+Hand: 6 of Spades; 5 of Hearts; 6 of Clubs;
+Score: 17
+
+
+The results of the game are summarized
+The result of player 1
+Player 1's hand:
+Hand: Q of Diamonds; 10 of Hearts;
+Score: 20
+History of actions:
+['add card', 'add card', 'pass']
+Hand condition: Winning hand
+
+The result of player 2
+Player 2's hand:
+Hand: A of Spades; 5 of Spades; 7 of Hearts; 4 of Clubs;
+Score: 17
+History of actions:
+['add card', 'add card', 'add card', 'add card', 'pass']
+Hand condition: Equal score
+
+The result of player 3
+Player 3's hand:
+Hand: K of Spades; 7 of Diamonds; 3 of Spades;
+Score: 20
+History of actions:
+['add card', 'add card', 'add card', 'pass']
+Hand condition: Winning hand
+
+
+
+The round is over
