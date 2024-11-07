@@ -15,7 +15,15 @@ class TreapNode:
 
 
 def count_nodes(node: TreapNode | None) -> int:
-    """A function for counting the number of child nodes."""
+    """
+    A recursive traversal function of child nodes to count the number of nodes.
+
+    Args:
+        node (TreapNode | None): the current node.
+
+    Returns:
+        result (int): number of nodes.
+    """
     if node is None:
         return 0
     if node.left is None and node.right is None:
@@ -76,8 +84,8 @@ class Treap(MutableMapping):
     '__len__() -> int':
         Returns the number of nodes in the treap.
 
-    'print_treap()':
-        Output information about the treap to the console.
+    '__str__() -> str':
+        Returns a string representation of the treap.
 
     '_rotate_right(node: TreapNode) -> TreapNode':
         A static method for rotating the tree to the right.
@@ -318,11 +326,18 @@ class Treap(MutableMapping):
         """Returns the number of nodes in the treap."""
         return self._count_nodes
 
-    def print_treap(self):
-        """Output information about the treap to the console."""
-        print("Treap:")
+    def __str__(self) -> str:
+        """
+        Returns a string representation of the tree in key-value format.
+
+        Returns:
+            result (str): a string with information about the key values.
+
+        """
+        result = "Treap:\n"
         for node in self:
-            print(f"Key: {node.key}, Value: {node.value}")
+            result += f"Key: {node.key}, Value: {node.value}\n"
+        return result
 
     @staticmethod
     def _rotate_right(node: TreapNode) -> TreapNode:

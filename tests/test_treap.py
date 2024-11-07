@@ -123,6 +123,6 @@ def test_print_tree(some_treap):
     expected_output = "Treap:\nKey: -2, Value: 4\nKey: -1, Value: 2\nKey: -0.5, Value: 5\nKey: 0, Value: 1\nKey: 1, Value: 3\n"
     captured_output = StringIO()
     sys.stdout = captured_output
-    some_treap.print_treap()
+    print(some_treap, end="")
     sys.stdout = sys.__stdout__
     assert captured_output.getvalue() == expected_output
