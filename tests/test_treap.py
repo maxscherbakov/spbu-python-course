@@ -1,6 +1,4 @@
 from project.treap import Treap
-from io import StringIO
-import sys
 import pytest
 
 
@@ -118,11 +116,7 @@ def test_reversed_iteration(some_treap):
     ]
 
 
-def test_print_tree(some_treap):
-    """The test is that the treap output to the console is working correctly."""
-    expected_output = "Treap:\nKey: -2, Value: 4\nKey: -1, Value: 2\nKey: -0.5, Value: 5\nKey: 0, Value: 1\nKey: 1, Value: 3\n"
-    captured_output = StringIO()
-    sys.stdout = captured_output
-    print(some_treap, end="")
-    sys.stdout = sys.__stdout__
-    assert captured_output.getvalue() == expected_output
+def test_str_treap(some_treap):
+    """Test is that the tree is correctly represented as a string."""
+    expected_str = "Treap:\nKey: -2, Value: 4\nKey: -1, Value: 2\nKey: -0.5, Value: 5\nKey: 0, Value: 1\nKey: 1, Value: 3\n"
+    assert str(some_treap) == expected_str
