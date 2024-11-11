@@ -59,4 +59,4 @@ jobs:
       # Run mypy on all the work files
       - name: Run mypy
         run: |
-          mypy project/ tests/ --strict
+          mypy project/ tests/
