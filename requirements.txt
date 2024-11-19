@@ -1,8 +1,10 @@
 black
 matplotlib
 mypy
+numpy
 pandas
 plotly
 pre-commit
 pytest
 seaborn
+sklearn
