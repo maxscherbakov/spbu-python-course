@@ -115,8 +115,10 @@ def test_players_chips() -> None:
             elif hand._state is HandStates.BLACKJACK:
                 dealer_hand = game._desk.dealer.hand
                 first_card = dealer_hand.get_card(0)
-                if player.strategy.even_money and first_card.name == "A":
-                    delta_chips += first_bet
-                elif not game._desk.dealer.hand._state is HandStates.BLACKJACK:
+                if not (
+                    player.strategy.even_money and first_card.name == "A"
+                ) and (
+                    not game._desk.dealer.hand._state is HandStates.BLACKJACK
+                ):
                     delta_chips += 1.5 * first_bet
         assert player._chips == 100 + int(delta_chips)
