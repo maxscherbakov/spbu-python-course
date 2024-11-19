@@ -6,5 +6,5 @@ pandas
 plotly
 pre-commit
 pytest
+scikit-learn
 seaborn
-sklearn
